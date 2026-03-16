@@ -757,6 +757,7 @@ pub const Application = extern struct {
             .toggle_maximize => Action.toggleMaximize(target),
             .toggle_fullscreen => Action.toggleFullscreen(target),
             .toggle_quick_terminal => return Action.toggleQuickTerminal(self),
+            .toggle_side_terminal => return false, // macOS only
             .toggle_tab_overview => return Action.toggleTabOverview(target),
             .toggle_window_decorations => return Action.toggleWindowDecorations(target),
             .toggle_command_palette => return Action.toggleCommandPalette(target),

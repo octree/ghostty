@@ -499,6 +499,68 @@ extension Ghostty {
             return v
         }
 
+        enum SideTerminalPosition: String {
+            case left, right
+        }
+
+        var sideTerminalPosition: SideTerminalPosition {
+            guard let config = self.config else { return .right }
+            var v: UnsafePointer<Int8>?
+            let key = "side-terminal-position"
+            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return .right }
+            guard let ptr = v else { return .right }
+            let str = String(cString: ptr)
+            return SideTerminalPosition(rawValue: str) ?? .right
+        }
+
+        var sideTerminalFocusedBackgroundOpacity: Double {
+            guard let config = self.config else { return 0 }
+            var v: Double = 0
+            let key = "side-terminal-focused-background-opacity"
+            _ = ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            return v
+        }
+
+        var sideTerminalFocusedBackgroundColor: NSColor? {
+            guard let config = self.config else { return nil }
+            var v = ghostty_config_color_s(r: 0, g: 0, b: 0)
+            let key = "side-terminal-focused-background-color"
+            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return nil }
+            return NSColor(red: CGFloat(v.r) / 255, green: CGFloat(v.g) / 255, blue: CGFloat(v.b) / 255, alpha: 1)
+        }
+
+        var sideTerminalFocusedTextOpacity: Double {
+            guard let config = self.config else { return 1 }
+            var v: Double = 1
+            let key = "side-terminal-focused-text-opacity"
+            _ = ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            return v
+        }
+
+        var sideTerminalUnfocusedBackgroundOpacity: Double {
+            guard let config = self.config else { return 0 }
+            var v: Double = 0
+            let key = "side-terminal-unfocused-background-opacity"
+            _ = ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            return v
+        }
+
+        var sideTerminalUnfocusedBackgroundColor: NSColor? {
+            guard let config = self.config else { return nil }
+            var v = ghostty_config_color_s(r: 0, g: 0, b: 0)
+            let key = "side-terminal-unfocused-background-color"
+            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return nil }
+            return NSColor(red: CGFloat(v.r) / 255, green: CGFloat(v.g) / 255, blue: CGFloat(v.b) / 255, alpha: 1)
+        }
+
+        var sideTerminalUnfocusedTextOpacity: Double {
+            guard let config = self.config else { return 0.75 }
+            var v: Double = 0.75
+            let key = "side-terminal-unfocused-text-opacity"
+            _ = ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            return v
+        }
+
         var backgroundBlur: BackgroundBlur {
             guard let config = self.config else { return .disabled }
             var v: Int16 = 0

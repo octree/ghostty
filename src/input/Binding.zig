@@ -809,6 +809,14 @@ pub const Action = union(enum) {
     /// configuration file to customize its behavior.
     toggle_quick_terminal,
 
+    /// Toggle the side terminal. The side terminal is a floating terminal
+    /// anchored to the right edge of the screen. When unfocused, it becomes
+    /// transparent or collapses to a thin strip, allowing you to monitor
+    /// command output without it being intrusive.
+    ///
+    /// Only implemented on macOS.
+    toggle_side_terminal,
+
     /// Show or hide all windows. If all windows become shown, we also ensure
     /// Ghostty becomes focused. When hiding all windows, focus is yielded
     /// to the next application as determined by the OS.
@@ -1301,6 +1309,7 @@ pub const Action = union(enum) {
             .close_all_windows,
             .quit,
             .toggle_quick_terminal,
+            .toggle_side_terminal,
             .toggle_visibility,
             .check_for_updates,
             .show_gtk_inspector,
