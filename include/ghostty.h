@@ -949,6 +949,7 @@ typedef enum {
   GHOSTTY_ACTION_SEARCH_SELECTED,
   GHOSTTY_ACTION_READONLY,
   GHOSTTY_ACTION_COPY_TITLE_TO_CLIPBOARD,
+  GHOSTTY_ACTION_TOGGLE_SIDE_TERMINAL,
 } ghostty_action_tag_e;
 
 typedef union {
@@ -1075,6 +1076,8 @@ GHOSTTY_API void ghostty_config_load_default_files(ghostty_config_t);
 GHOSTTY_API void ghostty_config_load_recursive_files(ghostty_config_t);
 GHOSTTY_API void ghostty_config_finalize(ghostty_config_t);
 GHOSTTY_API bool ghostty_config_get(ghostty_config_t, void*, const char*, uintptr_t);
+GHOSTTY_API void ghostty_config_set_background_opacity(ghostty_config_t, double);
+GHOSTTY_API void ghostty_config_set_background(ghostty_config_t, uint8_t, uint8_t, uint8_t);
 GHOSTTY_API ghostty_input_trigger_s ghostty_config_trigger(ghostty_config_t,
                                                               const char*,
                                                               uintptr_t);

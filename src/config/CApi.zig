@@ -141,6 +141,16 @@ export fn ghostty_config_open_path() c.String {
     return .fromSlice(path);
 }
 
+/// Set the background opacity on a configuration.
+export fn ghostty_config_set_background_opacity(self: *Config, opacity: f64) void {
+    self.@"background-opacity" = @floatCast(@max(0, @min(1, opacity)));
+}
+
+/// Set the background color on a configuration.
+export fn ghostty_config_set_background(self: *Config, r: u8, g: u8, b: u8) void {
+    self.background = .{ .r = r, .g = g, .b = b };
+}
+
 /// Sync with ghostty_diagnostic_s
 const Diagnostic = extern struct {
     message: [*:0]const u8 = "",

@@ -2771,6 +2771,57 @@ keybind: Keybinds = .{},
 /// Available since: 1.2.0
 @"quick-terminal-keyboard-interactivity": QuickTerminalKeyboardInteractivity = .@"on-demand",
 
+/// The position of the side terminal on the screen.
+///
+/// Valid values are:
+///
+///  * `right` (default) - The side terminal appears on the right edge.
+///  * `left` - The side terminal appears on the left edge.
+///
+/// Only implemented on macOS.
+@"side-terminal-position": SideTerminalPosition = .right,
+
+/// The background opacity of the side terminal when focused.
+/// If not set or set to `0`, falls back to the global `background-opacity`.
+///
+/// Only implemented on macOS.
+@"side-terminal-focused-background-opacity": f64 = 0,
+
+/// Override the background color of the side terminal when focused.
+/// If not set, the terminal's own background color from the theme is used.
+/// Specified as a hex color (e.g. `#1a1b26`).
+///
+/// Only implemented on macOS.
+@"side-terminal-focused-background-color": ?Color = null,
+
+/// The text (foreground) opacity of the side terminal when focused.
+/// Default is `1.0` (fully opaque).
+///
+/// Only implemented on macOS.
+@"side-terminal-focused-text-opacity": f64 = 1.0,
+
+/// The background opacity of the side terminal when it is not focused.
+/// A value of `0.0` makes the background fully transparent.
+/// The default is `0.0`.
+///
+/// Only implemented on macOS.
+@"side-terminal-unfocused-background-opacity": f64 = 0.0,
+
+/// Override the background color of the side terminal when unfocused.
+/// If not set, the terminal's own background color is used (at the
+/// opacity specified by `side-terminal-unfocused-background-opacity`).
+/// Specified as a hex color (e.g. `#1e1e2e`).
+///
+/// Only implemented on macOS.
+@"side-terminal-unfocused-background-color": ?Color = null,
+
+/// The text (foreground) opacity of the side terminal when not focused.
+/// This controls the overall window alpha, affecting text visibility.
+/// Default is `0.75` (75%).
+///
+/// Only implemented on macOS.
+@"side-terminal-unfocused-text-opacity": f64 = 0.75,
+
 /// Whether to enable shell integration auto-injection or not. Shell integration
 /// greatly enhances the terminal experience by enabling a number of features:
 ///
@@ -9217,6 +9268,12 @@ pub const QuickTerminalPosition = enum {
     left,
     right,
     center,
+};
+
+/// See side-terminal-position
+pub const SideTerminalPosition = enum {
+    left,
+    right,
 };
 
 /// See quick-terminal-layer

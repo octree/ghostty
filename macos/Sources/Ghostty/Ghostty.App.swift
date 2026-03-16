@@ -587,6 +587,9 @@ extension Ghostty {
             case GHOSTTY_ACTION_TOGGLE_QUICK_TERMINAL:
                 toggleQuickTerminal(app, target: target)
 
+            case GHOSTTY_ACTION_TOGGLE_SIDE_TERMINAL:
+                toggleSideTerminal(app, target: target)
+
             case GHOSTTY_ACTION_TOGGLE_VISIBILITY:
                 toggleVisibility(app, target: target)
 
@@ -1583,6 +1586,14 @@ extension Ghostty {
         ) {
             guard let appDelegate = NSApplication.shared.delegate as? AppDelegate else { return }
             appDelegate.toggleQuickTerminal(self)
+        }
+
+        private static func toggleSideTerminal(
+            _ app: ghostty_app_t,
+            target: ghostty_target_s
+        ) {
+            guard let appDelegate = NSApplication.shared.delegate as? AppDelegate else { return }
+            appDelegate.toggleSideTerminal(self)
         }
 
         private static func setTitle(

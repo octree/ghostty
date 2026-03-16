@@ -73,6 +73,7 @@ class AppDelegate: NSObject,
     @IBOutlet private var menuChangeTabTitle: NSMenuItem?
     @IBOutlet private var menuReadonly: NSMenuItem?
     @IBOutlet private var menuQuickTerminal: NSMenuItem?
+    @IBOutlet private var menuSideTerminal: NSMenuItem?
     @IBOutlet private var menuTerminalInspector: NSMenuItem?
     @IBOutlet private var menuCommandPalette: NSMenuItem?
 
@@ -129,6 +130,22 @@ class AppDelegate: NSObject,
             quickTerminalControllerState = .initialized(controller)
             return controller
         }
+    }
+
+    /// The current state of the side terminal.
+    private var sideTerminalController: SideTerminalController?
+
+    /// Carbon-based global hotkey for side terminal (works in ALL apps).
+    private var sideTerminalHotKey: SideTerminalHotKey?
+
+    /// Our side terminal. Lazy initialized on first use.
+    var sideController: SideTerminalController {
+        if let controller = sideTerminalController {
+            return controller
+        }
+        let controller = SideTerminalController(ghostty)
+        sideTerminalController = controller
+        return controller
     }
 
     /// Manages updates
@@ -239,6 +256,12 @@ class AppDelegate: NSObject,
             self,
             selector: #selector(quickTerminalDidChangeVisibility),
             name: .quickTerminalDidChangeVisibility,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(sideTerminalDidChangeVisibility),
+            name: .sideTerminalDidChangeVisibility,
             object: nil
         )
         NotificationCenter.default.addObserver(
@@ -637,6 +660,11 @@ class AppDelegate: NSObject,
         self.menuQuickTerminal?.state = if quickController.visible { .on } else { .off }
     }
 
+    @objc private func sideTerminalDidChangeVisibility(_ notification: Notification) {
+        guard let controller = notification.object as? SideTerminalController else { return }
+        self.menuSideTerminal?.state = controller.visible ? .on : .off
+    }
+
     @objc private func ghosttyConfigDidChange(_ notification: Notification) {
         // We only care if the configuration is a global configuration, not a surface one.
         guard notification.object == nil else { return }
@@ -992,6 +1020,50 @@ class AppDelegate: NSObject,
         quickController.toggle()
     }
 
+    @IBAction func toggleSideTerminal(_ sender: Any) {
+        sideController.toggle()
+    }
+
+    /// Register a Carbon-based global hotkey for the side terminal.
+    /// Carbon hotkeys work in ALL apps (same mechanism as Alfred/Spotlight),
+    /// unlike CGEvent taps which some apps can block.
+    private func registerSideTerminalCarbonHotKey(_ config: Ghostty.Config) {
+        sideTerminalHotKey = nil
+        guard let cfg = config.config else { return }
+
+        let action = "toggle_side_terminal"
+        let trigger = ghostty_config_trigger(cfg, action, UInt(action.count))
+
+        // We need a valid trigger with known modifiers
+        guard trigger.tag == GHOSTTY_TRIGGER_UNICODE || trigger.tag == GHOSTTY_TRIGGER_PHYSICAL else { return }
+
+        // Convert Ghostty key to Carbon keycode
+        let carbonKey: UInt32
+        if trigger.tag == GHOSTTY_TRIGGER_UNICODE {
+            guard let scalar = UnicodeScalar(trigger.key.unicode) else { return }
+            let ch = String(Character(scalar))
+            guard let key = SideTerminalHotKey.carbonKeyCode(from: ch) else { return }
+            carbonKey = key
+        } else {
+            // Physical key — use the raw keycode value as Carbon virtual keycode
+            guard let key = SideTerminalHotKey.carbonKeyCode(fromGhosttyKey: trigger.key.physical) else { return }
+            carbonKey = key
+        }
+
+        // Convert Ghostty mods to Carbon modifier mask
+        let rawMods = trigger.mods.rawValue
+        let carbonMods = SideTerminalHotKey.carbonModifiers(
+            cmd:   rawMods & GHOSTTY_MODS_SUPER.rawValue != 0,
+            shift: rawMods & GHOSTTY_MODS_SHIFT.rawValue != 0,
+            alt:   rawMods & GHOSTTY_MODS_ALT.rawValue != 0,
+            ctrl:  rawMods & GHOSTTY_MODS_CTRL.rawValue != 0
+        )
+
+        sideTerminalHotKey = SideTerminalHotKey(keyCode: carbonKey, modifiers: carbonMods) { [weak self] in
+            self?.toggleSideTerminal(self as Any)
+        }
+    }
+
     /// Toggles visibility of all Ghosty Terminal windows. When hidden, activates Ghostty as the frontmost application
     @IBAction func toggleVisibility(_ sender: Any) {
         // If we have focus, then we hide all windows.
@@ -1127,6 +1199,7 @@ extension AppDelegate {
         self.menuDecreaseFontSize?.setImageIfDesired(systemSymbolName: "textformat.size.smaller")
         self.menuCommandPalette?.setImageIfDesired(systemSymbolName: "filemenu.and.selection")
         self.menuQuickTerminal?.setImageIfDesired(systemSymbolName: "apple.terminal")
+        self.menuSideTerminal?.setImageIfDesired(systemSymbolName: "sidebar.trailing")
         self.menuChangeTabTitle?.setImageIfDesired(systemSymbolName: "pencil.line")
         self.menuTerminalInspector?.setImageIfDesired(systemSymbolName: "scope")
         self.menuReadonly?.setImageIfDesired(systemSymbolName: "eye.fill")
@@ -1203,6 +1276,8 @@ extension AppDelegate {
         syncMenuShortcut(config, action: "prompt_surface_title", menuItem: self.menuChangeTitle)
         syncMenuShortcut(config, action: "prompt_tab_title", menuItem: self.menuChangeTabTitle)
         syncMenuShortcut(config, action: "toggle_quick_terminal", menuItem: self.menuQuickTerminal)
+        syncMenuShortcut(config, action: "toggle_side_terminal", menuItem: self.menuSideTerminal)
+        registerSideTerminalCarbonHotKey(config)
         syncMenuShortcut(config, action: "toggle_visibility", menuItem: self.menuToggleVisibility)
         syncMenuShortcut(config, action: "toggle_window_float_on_top", menuItem: self.menuFloatOnTop)
         syncMenuShortcut(config, action: "inspector:toggle", menuItem: self.menuTerminalInspector)
